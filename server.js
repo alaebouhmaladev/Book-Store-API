@@ -1,9 +1,13 @@
 const express = require("express");
+const Joi = require("joi");
 
 // creating server with express module 
 const server = express()
 
-// Apply Middlweares 
+/**
+ * Express.js middleware to use JSON objects
+ * This express.json() make server accpet data from client side or any request with json type
+ */
 server.use(express.json());
 
 // init port for server 
@@ -123,20 +127,44 @@ server.get('/books/:id', (req, res) => {
 });
 
 /**
- * 
+ * http post method to accpet data from client side 
+ * we create new object here and after validation with schema create 
+ * we use Joi module for creation a schema for validation 
  */
-server.post('/books', (req,res) => {
+server.post('/books', async (req, res) => {
+
+    /**
+     * we create schema for validate object from client side and we create params
+     */
+    const schema = Joi.object({
+        author: Joi.string().trim().min(4).max(50).required(),
+        description: Joi.string().trim().min(3).max(500).required(),
+        price: Joi.number().min(0).required(),
+        cover: Joi.string().trim().required(),
+        name: Joi.string().trim().min(4).max(50).required(),
+    });
+
+    /**
+     * we use schema.validate() and give it body from request like parameter and this method 
+     * return error if object not valide and if valide retune null 
+     */
+    const { error } = await schema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json(error)
+    }
+
     const newBook = {
-        "id" : books.length + 1 ,
-        "author" : req.body.author,
+        "id": books.length + 1,
+        "author": req.body.author,
         "description": req.body.author,
         "price": parseFloat(req.body.price),
         "cover": req.body.cover,
-        "name":req.body.name,
-    }
-
+        "name": req.body.name,
+    };
     books.push(newBook);
-    res.status(200).json({message : "Book Added"})
+    res.status(200).json({ message: "Book Added" })
+
 });
 
 // method listen for running server 
