@@ -1,5 +1,6 @@
 const express = require("express");
 const Books = require("./routes/books");
+const Authors = require("./routes/authors");
 // creating server with express module 
 const server = express()
 
@@ -17,6 +18,9 @@ server.use(express.json());
 
 // Book Routes
 server.use("/books",Books);
+
+// Author Routes
+server.use("/authors",Authors);
 
 // init port for server 
 const PORT = 5050;
