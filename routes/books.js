@@ -127,9 +127,9 @@ router.get('/:id', (req, res) => {
  * we create new object here and after validation with schema create 
  * we use Joi module for creation a schema for validation 
  */
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
 
-    const {error } = validationObject(req.body);
+    const { error } = validateCreateObject(req.body);
 
     if (error) {
         return res.status(400).json(error.details[0].message)
@@ -148,10 +148,51 @@ router.post('/', async (req, res) => {
 
 });
 
-// Validation with joi 
+/**
+ * 
+ * @description Update A Book 
+ * @route /books/:id
+ * @method PUT
+ * @access public 
+ */
+router.put("/:id", (req, res) => {
+    const { error } = validateUpdateObject(req.body);
+    if (error) {
+        return res.status(400).json(error.details[0].message)
+    }
 
-function validationObject(obj) {
+    const BookToUpdate = books.find(book => book.id === parseInt(req.params.id));
 
+    if (BookToUpdate) {
+        res.status(200).json({ message: "Book Has Been Updated" })
+    }
+    else {
+        res.status(404).json({ message: "Book Not Found!" })
+    }
+});
+
+
+/**
+ * 
+ * @description Delete A Book With Id
+ * @route /books/:id
+ * @method Delete
+ * @access public 
+ */
+router.delete("/:id", (req, res) => {
+
+    const BookToDelete = books.find(book => book.id === parseInt(req.params.id));
+
+    if (BookToDelete) {
+        res.status(200).json({ message: "Book Has Been Deleted" })
+    }
+    else {
+        res.status(404).json({ message: "Book Not Found!" })
+    }
+});
+
+// Validation with joi Creation of object 
+function validateCreateObject(obj) {
 
     /**
      * we create schema for validate object from client side and we create params
@@ -162,6 +203,28 @@ function validationObject(obj) {
         price: Joi.number().min(0).required(),
         cover: Joi.string().trim().required(),
         name: Joi.string().trim().min(4).max(50).required(),
+    });
+
+    /**
+     * we use schema.validate() and give it body from request like parameter and this method 
+     * return error if object not valide and if valide retune null 
+     */
+    return schema.validate(obj);
+
+}
+
+// Validation with joi updating of object 
+function validateUpdateObject(obj) {
+
+    /**
+     * we create schema for validate object from client side and we create params
+     */
+    const schema = Joi.object({
+        author: Joi.string().trim().min(4).max(50),
+        description: Joi.string().trim().min(3).max(500),
+        price: Joi.number().min(0),
+        cover: Joi.string().trim(),
+        name: Joi.string().trim().min(4).max(50),
     });
 
     /**
