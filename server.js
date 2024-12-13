@@ -1,9 +1,10 @@
-const express = require("express");
-const Books = require("./routes/books");
-const Authors = require("./routes/authors");
+import express from "express";
+import Books from "./routes/books.js";
+import Authors from "./routes/authors.js";
+
+
 // creating server with express module 
 const server = express()
-
 
 // http method get to get home page requist 
 server.get('/', (req, res) => {

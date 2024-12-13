@@ -1,7 +1,8 @@
-const express = require("express");
-const Joi = require("joi");
-const router = express.Router();
+import express from "express";
+import Joi from "joi";
 
+// init Router using express.Router() Method 
+const Books = express.Router();
 
 
 const books = [
@@ -95,7 +96,7 @@ const books = [
  * The JSON.stringify() static method converts a JavaScript value to a JSON string
  * http method to get all books with route /books
  */
-router.get('/', (req, res) => {
+Books.get('/', (req, res) => {
     res.send(JSON.stringify(books));
 })
 
@@ -108,7 +109,7 @@ router.get('/', (req, res) => {
  * we use array.find for find object with id and we use Lambda expretion
  * we use parseint to convert string to integer 
  */
-router.get('/:id', (req, res) => {
+Books.get('/:id', (req, res) => {
     const book = books.find(x => x.id === parseInt(req.params.id));
     if (book) {
         res.status(200).json(book);
@@ -127,7 +128,7 @@ router.get('/:id', (req, res) => {
  * we create new object here and after validation with schema create 
  * we use Joi module for creation a schema for validation 
  */
-router.post('/', (req, res) => {
+Books.post('/', (req, res) => {
 
     const { error } = validateCreateObject(req.body);
 
@@ -155,7 +156,7 @@ router.post('/', (req, res) => {
  * @method PUT
  * @access public 
  */
-router.put("/:id", (req, res) => {
+Books.put("/:id", (req, res) => {
     const { error } = validateUpdateObject(req.body);
     if (error) {
         return res.status(400).json(error.details[0].message)
@@ -179,7 +180,7 @@ router.put("/:id", (req, res) => {
  * @method Delete
  * @access public 
  */
-router.delete("/:id", (req, res) => {
+Books.delete("/:id", (req, res) => {
 
     const BookToDelete = books.find(book => book.id === parseInt(req.params.id));
 
@@ -235,4 +236,6 @@ function validateUpdateObject(obj) {
 
 }
 
-module.exports = router;
+// module.exports = router;
+
+export default Books;

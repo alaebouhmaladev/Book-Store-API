@@ -1,6 +1,9 @@
-const express = require("express");
-const Joi = require("joi");
-const router = express.Router();
+import express from "express";
+import Joi from "joi";
+
+
+// init router from express.Router Method 
+const Authors = express.Router();
 
 const authors = [
     {
@@ -29,7 +32,7 @@ const authors = [
  * @method GET
  * @access public
  */
-router.get("/", (req, res) => {
+Authors.get("/", (req, res) => {
     res.status(200).json(authors);
 });
 
@@ -39,7 +42,7 @@ router.get("/", (req, res) => {
  * @method GET
  * @access public
  */
-router.get("/:id", (req, res) => {
+Authors.get("/:id", (req, res) => {
 
     // return objcet from data getting by object id 
     const author = authors.find(auth => auth.id === parseInt(req.params.id));
@@ -59,7 +62,7 @@ router.get("/:id", (req, res) => {
  * validate data from client side with joi 
  * create new object(author) and return message of succeess 
  */
-router.post("/", (req, res) => {
+Authors.post("/", (req, res) => {
     const { error } = validateCreateAuthor(req.body);
     if (error) {
         return res.status(400).json(error.details[0].message)
@@ -82,7 +85,7 @@ router.post("/", (req, res) => {
  * @method PUT
  * @access public
  */
-router.put("/:id", (req, res) => {
+Authors.put("/:id", (req, res) => {
     const { error } = validateUpdateAuthor(req.body);
 
     if (error) {
@@ -104,7 +107,7 @@ router.put("/:id", (req, res) => {
  * @method Delete
  * @access public
  */
-router.delete("/:id", (req,res) => {
+Authors.delete("/:id", (req,res) => {
     const author = authors.find(auth => auth.id === parseInt(req.params.id));
 
     if(!author){
@@ -153,4 +156,6 @@ function validateUpdateAuthor(obj) {
 }
 
 
-module.exports = router;
+// module.exports = router;
+
+export default Authors;
