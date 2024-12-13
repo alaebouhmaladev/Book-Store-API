@@ -1,5 +1,6 @@
 import express from "express";
 import Joi from "joi";
+import { GetAllAuthors, GetAuthorById, CreateNewAuthor } from "../models/Authors.js";
 
 
 // init router from express.Router Method 
@@ -32,8 +33,14 @@ const authors = [
  * @method GET
  * @access public
  */
-Authors.get("/", (req, res) => {
-    res.status(200).json(authors);
+Authors.get("/", async (req, res) => {
+    try {
+        const result = await GetAllAuthors();
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error fetching authors:', error);
+        res.status(500).json({ error: 'Failed to fetch authors' });
+    }
 });
 
 /**
@@ -42,15 +49,16 @@ Authors.get("/", (req, res) => {
  * @method GET
  * @access public
  */
-Authors.get("/:id", (req, res) => {
+Authors.get("/:id", async (req, res) => {
 
-    // return objcet from data getting by object id 
-    const author = authors.find(auth => auth.id === parseInt(req.params.id));
-    if (!author) {
-        return res.status(404).json({ message: "author not found!" });
+    try {
+        // return objcet from data getting by object id 
+        const result = await GetAuthorById(parseInt(req.params.id));
+        res.status(200).json(result);
+    } catch (error) {
+        console.log('Error Getting author by id:', error);
+        res.status(500).json({ error : 'Failed to fetch author by id'});
     }
-
-    res.status(200).json(author);
 
 })
 
@@ -62,21 +70,26 @@ Authors.get("/:id", (req, res) => {
  * validate data from client side with joi 
  * create new object(author) and return message of succeess 
  */
-Authors.post("/", (req, res) => {
+Authors.post("/", async (req, res) => {
     const { error } = validateCreateAuthor(req.body);
     if (error) {
         return res.status(400).json(error.details[0].message)
     };
 
     const newAuthor = {
-        id: authors.length + 1,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         Image: req.body.Image,
     };
 
-    authors.push(newAuthor);
-    res.status(201).json({ message: "Author added!", obj: newAuthor })
+    try {
+        const result = await CreateNewAuthor(newAuthor);
+        res.status(201).json({ message: "Author added successfully!"})
+    } catch (error) {
+        console.log('Error to Add author:', error);
+        res.status(500).json({ error : 'Internal server error. Failed to add author.'});
+    }
+    
 });
 
 /**
@@ -107,14 +120,14 @@ Authors.put("/:id", (req, res) => {
  * @method Delete
  * @access public
  */
-Authors.delete("/:id", (req,res) => {
+Authors.delete("/:id", (req, res) => {
     const author = authors.find(auth => auth.id === parseInt(req.params.id));
 
-    if(!author){
-        return res.status(400).json({message : "Author not found!"});
+    if (!author) {
+        return res.status(400).json({ message: "Author not found!" });
     }
 
-    res.status(200).json({message : "Author Deleted" , author});
+    res.status(200).json({ message: "Author Deleted", author });
 });
 
 

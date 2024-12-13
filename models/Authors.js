@@ -9,14 +9,16 @@ import connection from "../db.js";
  */
 export function GetAllAuthors() {
 
-    // Sql query to get all authors from authors table  
-    const q = `SELECT * FROM Authors`;
-
-    // Result variable to stock data return from query 
-    return connection.query(q, (error, res, fields) => {
-        if (error) {
-            throw error;
-        }
+    // use Promise method have to params resolve return result and reject return error 
+    return new Promise((resolve, reject) => {
+        // SQL query to get all authors from the authors table 
+        const q = `SELECT * FROM Authors`;
+        connection.query(q, (error, res) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(res);
+        });
     });
 }
 
@@ -29,22 +31,52 @@ export function GetAllAuthors() {
 export function GetAuthorById(id) {
 
     // sql query to get author by id from authors table
-    const q = `select * from authors where authorId = ${id}`;
+    const q = `select * from authors where authorId = ?`;
 
-    if (query) {
-        // Result variable to stock data return from query
-        const Result = connection.query(q, (error, res, fields) => {
+    // use Promise method have to params resolve return result and reject return error 
+    return new Promise((resolve, reject) => {
+        connection.query(q, [id], (error, res) => {
             if (error) {
-                console.log(error)
+                return reject(error);
             }
-            return res;
+            resolve(res);
         })
+    });
+}
 
-        return Result;
-    }
+/**
+ * @method CreateNewAuthor() 
+ * @param obj author object with all fileds 
+ * @description use this method to insert in author in authors table 
+ */
 
-    return "Author not found!";
+export function CreateNewAuthor(obj) {
+
+    // sql query to insert a new author colmun in authors tables 
+    const q = `INSERT INTO Authors (firstName,lastName,imageUrl,createdAt) VALUES(?,?,?,?)`;
+
+    // use this varbal to stock current date 
+    let currentDate = new Date();
+
+    // use Promise method have to params resolve return result and reject return error 
+    return new Promise((resolve, reject) => {
+        connection.query(q, [obj.firstName, obj.lastName, obj.Image, currentDate], (error, res) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(res);
+        });
+    });
 
 }
 
+/**
+ * @method UpdateAuthor()
+ * @param obj author object with updated fileds 
+ * @description use this method to update author in authors table 
+ */
+export function UpdateAuthor(obj){
 
+    // sql query to update author colmun in authors table 
+    const q = `UPDATE Authors SET firstName = ?, lastName = ?, imageUrl = ?,`;
+}
