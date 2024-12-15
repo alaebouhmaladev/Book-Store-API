@@ -75,8 +75,18 @@ export function CreateNewAuthor(obj) {
  * @param obj author object with updated fileds 
  * @description use this method to update author in authors table 
  */
-export function UpdateAuthor(obj){
+export function UpdateAuthor(obj) {
 
     // sql query to update author colmun in authors table 
-    const q = `UPDATE Authors SET firstName = ?, lastName = ?, imageUrl = ?,`;
+    const q = `UPDATE Authors SET firstName = ?, lastName = ?, imageUrl = ? WHERE authorId = ?`;
+
+    // use Promise method have to params resolve return result and reject return error
+    return new Promise((resolve, reject) => {
+        connection.query(q, [obj.firstName, obj.lastName, obj.Image, obj.id], (error, res) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(res);
+        });
+    });
 }

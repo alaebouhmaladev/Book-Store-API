@@ -1,6 +1,6 @@
 import express from "express";
 import Joi from "joi";
-import { GetAllAuthors, GetAuthorById, CreateNewAuthor } from "../models/Authors.js";
+import { GetAllAuthors, GetAuthorById, CreateNewAuthor, UpdateAuthor } from "../models/Authors.js";
 
 
 // init router from express.Router Method 
@@ -98,20 +98,30 @@ Authors.post("/", async (req, res) => {
  * @method PUT
  * @access public
  */
-Authors.put("/:id", (req, res) => {
+Authors.put("/:id", async (req, res) => {
+
+    const result = await GetAuthorById(parseInt(req.params.id));
+
     const { error } = validateUpdateAuthor(req.body);
 
     if (error) {
         return res.status(400).json(error.details[0].message);
     }
 
-    const author = authors.find(auth => auth.id === parseInt(req.params.id));
+    const author = {
+        id:result[0].authorId,
+        firstName: req.body.firstName ? req.body.firstName : result[0].firstName,
+        lastName: req.body.lastName ? req.body.lastName : result[0].lastName,
+        Image: req.body.Image ? req.body.Image : result[0].imageUrl,
+    };
 
-    if (!author) {
-        return res.status(400).json({ message: "Author Not Found!" });
+    try {
+        const updateResult = await UpdateAuthor(author);
+        res.status(201).json({ message: "Author Updated successfully!"})
+    } catch (error) {
+        console.log('Error to update author:', error);
+        res.status(500).json({ error : 'Internal server error. Failed to update author.'});
     }
-
-    res.status(200).json({ message: "Author updated" })
 });
 
 /**
