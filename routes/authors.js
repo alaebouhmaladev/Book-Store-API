@@ -1,31 +1,11 @@
 import express from "express";
-import Joi from "joi";
-import { GetAllAuthors, GetAuthorById, CreateNewAuthor, UpdateAuthor } from "../models/Authors.js";
+import { GetAllAuthors, GetAuthorById, CreateNewAuthor, UpdateAuthor, DeleteAuthor } from "../models/Authors.js";
+import { validateCreateAuthor, validateUpdateAuthor } from "../utils/AuthorsValidation.js";
 
 
 // init router from express.Router Method 
 const Authors = express.Router();
 
-const authors = [
-    {
-        id: 1,
-        firstName: "Alae",
-        lastName: "Bouhmala",
-        Image: "defualt-image.png",
-    },
-    {
-        id: 2,
-        firstName: "Nabil",
-        lastName: "Bouhmala",
-        Image: "defualt-image.png",
-    },
-    {
-        id: 3,
-        firstName: "omar",
-        lastName: "zlifi",
-        Image: "defualt-image.png",
-    },
-];
 
 /**
  * @description Get All Authors 
@@ -54,10 +34,14 @@ Authors.get("/:id", async (req, res) => {
     try {
         // return objcet from data getting by object id 
         const result = await GetAuthorById(parseInt(req.params.id));
+        // console.log(result.length);
+        if (result.length == 0) {
+            return res.status(404).json({ message: 'Author Not Found!' })
+        }
         res.status(200).json(result);
     } catch (error) {
         console.log('Error Getting author by id:', error);
-        res.status(500).json({ error : 'Failed to fetch author by id'});
+        res.status(500).json({ error: 'Failed to fetch author by id' });
     }
 
 })
@@ -84,12 +68,12 @@ Authors.post("/", async (req, res) => {
 
     try {
         const result = await CreateNewAuthor(newAuthor);
-        res.status(201).json({ message: "Author added successfully!"})
+        res.status(201).json({ message: "Author added successfully!" })
     } catch (error) {
         console.log('Error to Add author:', error);
-        res.status(500).json({ error : 'Internal server error. Failed to add author.'});
+        res.status(500).json({ error: 'Internal server error. Failed to add author.' });
     }
-    
+
 });
 
 /**
@@ -109,7 +93,7 @@ Authors.put("/:id", async (req, res) => {
     }
 
     const author = {
-        id:result[0].authorId,
+        id: result[0].authorId,
         firstName: req.body.firstName ? req.body.firstName : result[0].firstName,
         lastName: req.body.lastName ? req.body.lastName : result[0].lastName,
         Image: req.body.Image ? req.body.Image : result[0].imageUrl,
@@ -117,10 +101,10 @@ Authors.put("/:id", async (req, res) => {
 
     try {
         const updateResult = await UpdateAuthor(author);
-        res.status(201).json({ message: "Author Updated successfully!"})
+        res.status(201).json({ message: "Author Updated successfully!" })
     } catch (error) {
         console.log('Error to update author:', error);
-        res.status(500).json({ error : 'Internal server error. Failed to update author.'});
+        res.status(500).json({ error: 'Internal server error. Failed to update author.' });
     }
 });
 
@@ -130,54 +114,17 @@ Authors.put("/:id", async (req, res) => {
  * @method Delete
  * @access public
  */
-Authors.delete("/:id", (req, res) => {
-    const author = authors.find(auth => auth.id === parseInt(req.params.id));
+Authors.delete("/:id", async (req, res) => {
 
-    if (!author) {
-        return res.status(400).json({ message: "Author not found!" });
+    try {
+        const result = await DeleteAuthor(parseInt(req.params.id));
+        res.status(200).json({ message: "Author Deleted Successfully!" });
+    } catch (error) {
+        console.log('Error to delete author: ', error);
+        res.status(500).json({ error: 'Internal server error. Failed to delete author' })
     }
 
-    res.status(200).json({ message: "Author Deleted", author });
 });
-
-
-/**
- * @description Validate data from client side
- * @method validateCreateAuthor()
- * @param obj json object from request body 
- */
-function validateCreateAuthor(obj) {
-
-    // schema validation template using joi 
-    const schema = Joi.object({
-        firstName: Joi.string().trim().min(3).max(50).required(),
-        lastName: Joi.string().trim().min(3).max(50).required(),
-        Image: Joi.string().trim().required(),
-    });
-
-    // Return validation result 
-    return schema.validate(obj);
-}
-
-
-/**
- * @description Validate data from client side
- * @method validateUpdateAuthor()
- * @param obj json object from request body 
- */
-function validateUpdateAuthor(obj) {
-
-    // schema validation template using joi 
-    const schema = Joi.object({
-        firstName: Joi.string().trim().min(3).max(50),
-        lastName: Joi.string().trim().min(3).max(50),
-        Image: Joi.string().trim(),
-    });
-
-    // Return validation result 
-    return schema.validate(obj);
-}
-
 
 // module.exports = router;
 

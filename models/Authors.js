@@ -90,3 +90,27 @@ export function UpdateAuthor(obj) {
         });
     });
 }
+
+
+/**
+ * @method DeleteAuthor() 
+ * @param id author id for delete a special author 
+ * @description use this method to Delete author by id from authors table 
+ */
+
+export function DeleteAuthor(id) {
+
+    // sql query to delete author from authors table with authorId
+    const q = `DELETE FROM Authors WHERE authorId = ?`;
+
+    // use Promise method have to params resolve return result and reject return error
+    return new Promise((resolve, reject) => {
+        connection.query(q, [id], (error, res) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(res);
+        })
+    })
+
+}
