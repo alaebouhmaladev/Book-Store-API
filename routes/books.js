@@ -1,5 +1,6 @@
 import express from "express";
 import { validateCreateBook, validateUpdateBook } from "../utils/BooksValidation.js";
+import { GetAllBooks, GetBookById } from "../models/Books.js";
 
 
 // init Router using express.Router() Method 
@@ -97,8 +98,17 @@ const books = [
  * The JSON.stringify() static method converts a JavaScript value to a JSON string
  * http method to get all books with route /books
  */
-Books.get('/', (req, res) => {
-    res.send(JSON.stringify(books));
+Books.get('/', async (req, res) => {
+    try {
+        const result = await GetAllBooks();
+        if (result.length === 0) {
+            return res.status(404).json({ message: "Books not Found!" });
+        }
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error fetching books:', error);
+        res.status(500).json({ error: 'Failed to fetch books' });
+    }
 })
 
 /**
@@ -110,14 +120,20 @@ Books.get('/', (req, res) => {
  * we use array.find for find object with id and we use Lambda expretion
  * we use parseint to convert string to integer 
  */
-Books.get('/:id', (req, res) => {
-    const book = books.find(x => x.id === parseInt(req.params.id));
-    if (book) {
-        res.status(200).json(book);
+Books.get('/:id', async (req, res) => {
+
+    try {
+        // return Book from data getting by Book id 
+        const result = await GetBookById(parseInt(req.params.id));
+        if (result.length == 0) {
+            return res.status(404).json({ message: 'Book Not Found!' })
+        }
+        res.status(200).json(result);
+    } catch (error) {
+        console.log('Error Getting Book by id:', error);
+        res.status(500).json({ error: 'Failed to fetch Book by id' });
     }
-    else {
-        res.status(404).json({ message: "Book not Found" })
-    }
+
 });
 
 /**
@@ -158,7 +174,7 @@ Books.post('/', (req, res) => {
  * @access public 
  */
 Books.put("/:id", (req, res) => {
-    const { error } = validateCreateBook(req.body);
+    const { error } = validateUpdateBook(req.body);
     if (error) {
         return res.status(400).json(error.details[0].message)
     }
