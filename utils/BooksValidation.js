@@ -8,11 +8,11 @@ export function validateCreateBook(obj) {
      * we create schema for validate object from client side and we create params
      */
     const schema = Joi.object({
-        author: Joi.string().trim().min(4).max(50).required(),
+        authorId: Joi.number().min(1).required(),
         description: Joi.string().trim().min(3).max(500).required(),
         price: Joi.number().min(0).required(),
-        cover: Joi.string().trim().required(),
-        name: Joi.string().trim().min(4).max(50).required(),
+        publishedDate: Joi.string().trim().min(4).required(),
+        title: Joi.string().trim().min(4).max(150).required(),
     });
 
     /**
@@ -30,11 +30,11 @@ export function validateUpdateBook(obj) {
      * we create schema for validate object from client side and we create params
      */
     const schema = Joi.object({
-        author: Joi.string().trim().min(4).max(50),
+        authorId: Joi.number().min(1),
         description: Joi.string().trim().min(3).max(500),
         price: Joi.number().min(0),
-        cover: Joi.string().trim(),
-        name: Joi.string().trim().min(4).max(50),
+        publishedDate: Joi.string().trim().min(4),
+        title: Joi.string().trim().min(4).max(150),
     });
 
     /**

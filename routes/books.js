@@ -1,6 +1,7 @@
 import express from "express";
 import { validateCreateBook, validateUpdateBook } from "../utils/BooksValidation.js";
-import { GetAllBooks, GetBookById } from "../models/Books.js";
+import { CreateNewBook, DeleteBook, GetAllBooks, GetBookById, UpdateBook } from "../models/Books.js";
+import { GetAuthorById } from "../models/Authors.js";
 
 
 // init Router using express.Router() Method 
@@ -145,24 +146,34 @@ Books.get('/:id', async (req, res) => {
  * we create new object here and after validation with schema create 
  * we use Joi module for creation a schema for validation 
  */
-Books.post('/', (req, res) => {
+Books.post('/', async (req, res) => {
 
     const { error } = validateCreateBook(req.body);
 
     if (error) {
         return res.status(400).json(error.details[0].message)
     }
+    // check if author not found we can't insert new book whitout found author 
+    const author = await GetAuthorById(parseInt(req.body.authorId));
+    if (author.length === 0) {
+        return res.status(404).json({ message: "Author not Found!" })
+    }
 
     const newBook = {
-        "id": books.length + 1,
-        "author": req.body.author,
-        "description": req.body.description,
-        "price": parseFloat(req.body.price),
-        "cover": req.body.cover,
-        "name": req.body.name,
+        title: req.body.title,
+        description: req.body.description,
+        price: parseFloat(req.body.price),
+        publishedDate: req.body.publishedDate,
+        authorId: req.body.authorId,
     };
-    books.push(newBook);
-    res.status(200).json({ message: "Book Added" })
+
+    try {
+        const result = await CreateNewBook(newBook);
+        res.status(201).json({ message: "Book added successfully!" })
+    } catch (error) {
+        console.log('Error to Add Book:', error);
+        res.status(500).json({ error: 'Internal server error. Failed to add Book.' });
+    }
 
 });
 
@@ -173,39 +184,59 @@ Books.post('/', (req, res) => {
  * @method PUT
  * @access public 
  */
-Books.put("/:id", (req, res) => {
+Books.put("/:id", async (req, res) => {
+
     const { error } = validateUpdateBook(req.body);
+
     if (error) {
         return res.status(400).json(error.details[0].message)
     }
 
-    const BookToUpdate = books.find(book => book.id === parseInt(req.params.id));
+    const result = await GetBookById(parseInt(req.params.id));
 
-    if (BookToUpdate) {
-        res.status(200).json({ message: "Book Has Been Updated" })
+    const book = {
+        id: parseInt(req.params.id),
+        title: req.body.title ? req.body.title : result[0].title,
+        description: req.body.description ? req.body.description : result[0].description,
+        price: parseFloat(req.body.price) ? parseFloat(req.body.price) : result[0].price,
+        publishedDate: req.body.publishedDate ? req.body.publishedDate : result[0].publishedDate,
+        authorId: req.body.authorId ? req.body.authorId : result[0].authorId,
     }
-    else {
-        res.status(404).json({ message: "Book Not Found!" })
+
+    try {
+        const Book = await UpdateBook(book);
+        res.status(200).json({ message : "Book Updated Successfully"});
+    } catch (error) {
+        console.log('Error to Update Book:', error);
+        res.status(500).json({ error: 'Internal server error. Failed to Update Book.' });
     }
 });
 
 
 /**
  * 
- * @description Delete A Book With Id
+ * @description Delete Book With Id
  * @route /books/:id
  * @method Delete
  * @access public 
  */
-Books.delete("/:id", (req, res) => {
+Books.delete("/:id", async (req, res) => {
 
-    const BookToDelete = books.find(book => book.id === parseInt(req.params.id));
+    const Book = await GetBookById(parseInt(req.params.id));
 
-    if (BookToDelete) {
-        res.status(200).json({ message: "Book Has Been Deleted" })
+    // check if found book in books table using bookId
+    if(Book.length === 0 ){
+        return res.status(404).json({ message : "Book Not Found!"});
     }
-    else {
-        res.status(404).json({ message: "Book Not Found!" })
+
+    try {
+        
+        const result = await DeleteBook(parseInt(req.params.id));
+        res.status(200).json({ message : "Book Deleted Successfully"});
+
+    } catch (error) {
+        console.log('Error to Delete Book: ', error);
+        res.status(500).json({ error: 'Internal server error. Failed to Delete Book.' });
     }
 });
 
